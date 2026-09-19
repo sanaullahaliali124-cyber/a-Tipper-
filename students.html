@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Students | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Students</div>
+            <h1>Student Management</h1>
+          </div>
+          <div class="d-flex gap-2 no-print">
+            <button class="btn btn-primary" onclick="openStudentModal()" id="addStudentBtn">
+              <i class="fas fa-plus"></i> Add Student
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="filters-bar no-print">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search name, admission no, phone..." oninput="renderStudents()">
+              </div>
+              <select class="form-select" id="filterClass" onchange="renderStudents()">
+                <option value="">All Classes</option>
+              </select>
+              <select class="form-select" id="filterSection" onchange="renderStudents()">
+                <option value="">All Sections</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
+              <select class="form-select" id="filterStatus" onchange="renderStudents()">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table" id="studentsTable">
+                <thead>
+                  <tr>
+                    <th>Photo</th>
+                    <th>Admission No</th>
+                    <th>Student Name</th>
+                    <th>Father/Guardian</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Phone</th>
+                    <th>WhatsApp</th>
+                    <th>Status</th>
+                    <th class="no-print">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsBody"></tbody>
+              </table>
+            </div>
+            <div id="emptyStudents" class="empty-state hidden">
+              <i class="fas fa-user-graduate"></i>
+              <h3>No students found</h3>
+              <p>Add a new student to get started</p>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <!-- Student Modal -->
+  <div class="modal-overlay" id="studentModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Student</h3>
+        <button class="modal-close" onclick="closeStudentModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="studentForm">
+          <input type="hidden" id="studentId">
+          <div class="form-row">
+            <div>
+              <label class="form-label">Student Name <span class="required">*</span></label>
+              <input type="text" class="form-control" id="sName" required>
+            </div>
+            <div>
+              <label class="form-label">Father / Guardian Name <span class="required">*</span></label>
+              <input type="text" class="form-control" id="sFather" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Admission Number <span class="required">*</span></label>
+              <input type="text" class="form-control" id="sAdmissionNo" required>
+            </div>
+            <div>
+              <label class="form-label">Roll Number</label>
+              <input type="text" class="form-control" id="sRollNo">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Class <span class="required">*</span></label>
+              <select class="form-select" id="sClass" required></select>
+            </div>
+            <div>
+              <label class="form-label">Section <span class="required">*</span></label>
+              <select class="form-select" id="sSection" required>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Gender <span class="required">*</span></label>
+              <select class="form-select" id="sGender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Date of Birth</label>
+              <input type="date" class="form-control" id="sDob">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="sPhone" placeholder="03XX XXXXXXX">
+            </div>
+            <div>
+              <label class="form-label">WhatsApp Number <span class="required">*</span></label>
+              <input type="tel" class="form-control" id="sWhatsapp" required placeholder="03XX XXXXXXX">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Alternative Number</label>
+              <input type="tel" class="form-control" id="sAltPhone">
+            </div>
+            <div>
+              <label class="form-label">Admission Date</label>
+              <input type="date" class="form-control" id="sAdmissionDate">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Blood Group</label>
+              <select class="form-select" id="sBlood">
+                <option value="">-</option>
+                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Status</label>
+              <select class="form-select" id="sStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div style="grid-column:1/-1">
+              <label class="form-label">Address</label>
+              <textarea class="form-textarea" id="sAddress" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Previous School</label>
+              <input type="text" class="form-control" id="sPrevSchool">
+            </div>
+            <div>
+              <label class="form-label">Emergency Contact</label>
+              <input type="tel" class="form-control" id="sEmergency">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeStudentModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveStudent()"><i class="fas fa-save"></i> Save Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Student Profile</h3>
+        <button class="modal-close" onclick="document.getElementById('viewModal').classList.remove('show')">&times;</button>
+      </div>
+      <div class="modal-body" id="viewBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('viewModal').classList.remove('show')">Close</button>
+        <button class="btn btn-primary" onclick="printStudentProfile()"><i class="fas fa-print"></i> Print</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/students.js"></script>
+  <script>
+    let editingId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth(['admin', 'teacher', 'parent']);
+      if (!session) return;
+      renderLayout('students');
+
+      if (session.role !== 'admin') {
+        document.getElementById('addStudentBtn').style.display = 'none';
+      }
+
+      // Populate class filter
+      const classes = getData(STORAGE_KEYS.classes);
+      const classSelect = document.getElementById('filterClass');
+      const sClass = document.getElementById('sClass');
+      classes.forEach(c => {
+        classSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        sClass.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+
+      document.getElementById('sAdmissionDate').value = today();
+      renderStudents();
+    });
+
+    function renderStudents() {
+      const session = getSession();
+      let students = getData(STORAGE_KEYS.students);
+
+      // Parent sees only their children
+      if (session.role === 'parent') {
+        const parents = getData(STORAGE_KEYS.parents);
+        const parent = parents.find(p => p.id === session.id);
+        if (parent && parent.studentIds) {
+          students = students.filter(s => parent.studentIds.includes(s.id));
+        } else {
+          students = [];
+        }
+      }
+
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const fClass = document.getElementById('filterClass')?.value || '';
+      const fSec = document.getElementById('filterSection')?.value || '';
+      const fStatus = document.getElementById('filterStatus')?.value || '';
+
+      students = students.filter(s => {
+        if (q && !(s.name + s.admissionNo + s.phone + s.whatsapp + (s.fatherName || '')).toLowerCase().includes(q)) return false;
+        if (fClass && s.className !== fClass) return false;
+        if (fSec && s.section !== fSec) return false;
+        if (fStatus && s.status !== fStatus) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('studentsBody');
+      const empty = document.getElementById('emptyStudents');
+
+      if (students.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = students.map(s => {
+        const photo = s.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=2c5aa0&color=fff&size=72`;
+        const canEdit = getSession().role === 'admin';
+        return `<tr>
+          <td><img class="avatar" src="${photo}" alt=""></td>
+          <td>${s.admissionNo}</td>
+          <td class="fw-bold">${s.name}</td>
+          <td>${s.fatherName || s.guardianName || '-'}</td>
+          <td>${s.className || '-'}</td>
+          <td>${s.section || '-'}</td>
+          <td>${s.phone || '-'}</td>
+          <td>
+            ${s.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${s.whatsapp}')"><i class="fab fa-whatsapp"></i> Chat</button>` : '-'}
+          </td>
+          <td><span class="badge badge-${s.status === 'active' ? 'success' : 'danger'}">${s.status}</span></td>
+          <td class="no-print">
+            <div class="action-btns">
+              <button class="btn btn-icon btn-outline" title="View" onclick="viewStudent('${s.id}')"><i class="fas fa-eye"></i></button>
+              ${canEdit ? `<button class="btn btn-icon btn-outline" title="Edit" onclick="editStudent('${s.id}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-icon btn-outline" title="Delete" onclick="deleteStudent('${s.id}')"><i class="fas fa-trash text-danger"></i></button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openStudentModal(id = null) {
+      editingId = id;
+      document.getElementById('modalTitle').textContent = id ? 'Edit Student' : 'Add Student';
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentId').value = '';
+      document.getElementById('sAdmissionDate').value = today();
+      document.getElementById('sStatus').value = 'active';
+
+      if (id) {
+        const s = getData(STORAGE_KEYS.students).find(x => x.id === id);
+        if (s) {
+          document.getElementById('studentId').value = s.id;
+          document.getElementById('sName').value = s.name || '';
+          document.getElementById('sFather').value = s.fatherName || '';
+          document.getElementById('sAdmissionNo').value = s.admissionNo || '';
+          document.getElementById('sRollNo').value = s.rollNo || '';
+          document.getElementById('sClass').value = s.className || '';
+          document.getElementById('sSection').value = s.section || 'A';
+          document.getElementById('sGender').value = s.gender || 'Male';
+          document.getElementById('sDob').value = s.dob || '';
+          document.getElementById('sPhone').value = s.phone || '';
+          document.getElementById('sWhatsapp').value = s.whatsapp || '';
+          document.getElementById('sAltPhone').value = s.altPhone || '';
+          document.getElementById('sAdmissionDate').value = s.admissionDate || '';
+          document.getElementById('sBlood').value = s.bloodGroup || '';
+          document.getElementById('sStatus').value = s.status || 'active';
+          document.getElementById('sAddress').value = s.address || '';
+          document.getElementById('sPrevSchool').value = s.previousSchool || '';
+          document.getElementById('sEmergency').value = s.emergencyContact || '';
+        }
+      } else {
+        // Auto admission no
+        const count = getData(STORAGE_KEYS.students).length + 1;
+        document.getElementById('sAdmissionNo').value = 'ADM-' + new Date().getFullYear() + '-' + String(count).padStart(3, '0');
+      }
+      document.getElementById('studentModal').classList.add('show');
+    }
+
+    function closeStudentModal() {
+      document.getElementById('studentModal').classList.remove('show');
+      editingId = null;
+    }
+
+    function saveStudent() {
+      const form = document.getElementById('studentForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      const students = getData(STORAGE_KEYS.students);
+      const data = {
+        name: document.getElementById('sName').value.trim(),
+        fatherName: document.getElementById('sFather').value.trim(),
+        guardianName: document.getElementById('sFather').value.trim(),
+        admissionNo: document.getElementById('sAdmissionNo').value.trim(),
+        rollNo: document.getElementById('sRollNo').value.trim(),
+        className: document.getElementById('sClass').value,
+        section: document.getElementById('sSection').value,
+        gender: document.getElementById('sGender').value,
+        dob: document.getElementById('sDob').value,
+        phone: document.getElementById('sPhone').value.trim(),
+        whatsapp: document.getElementById('sWhatsapp').value.trim(),
+        altPhone: document.getElementById('sAltPhone').value.trim(),
+        admissionDate: document.getElementById('sAdmissionDate').value,
+        bloodGroup: document.getElementById('sBlood').value,
+        status: document.getElementById('sStatus').value,
+        address: document.getElementById('sAddress').value.trim(),
+        previousSchool: document.getElementById('sPrevSchool').value.trim(),
+        emergencyContact: document.getElementById('sEmergency').value.trim(),
+        photo: ''
+      };
+
+      if (editingId) {
+        const idx = students.findIndex(s => s.id === editingId);
+        if (idx !== -1) {
+          students[idx] = { ...students[idx], ...data };
+          logActivity('Update Student', data.name);
+          showToast('Student updated successfully');
+        }
+      } else {
+        // Check duplicate admission
+        if (students.some(s => s.admissionNo === data.admissionNo)) {
+          showToast('Admission number already exists', 'error');
+          return;
+        }
+        data.id = generateId('STU');
+        students.push(data);
+        logActivity('Add Student', data.name);
+        showToast('Student added successfully');
+      }
+      setData(STORAGE_KEYS.students, students);
+      closeStudentModal();
+      renderStudents();
+    }
+
+    function editStudent(id) { openStudentModal(id); }
+
+    function deleteStudent(id) {
+      confirmModal('Delete Student', 'Are you sure you want to delete this student? This action cannot be undone.', () => {
+        let students = getData(STORAGE_KEYS.students);
+        const s = students.find(x => x.id === id);
+        students = students.filter(x => x.id !== id);
+        setData(STORAGE_KEYS.students, students);
+        logActivity('Delete Student', s ? s.name : id);
+        showToast('Student deleted');
+        renderStudents();
+      });
+    }
+
+    function viewStudent(id) {
+      const s = getData(STORAGE_KEYS.students).find(x => x.id === id);
+      if (!s) return;
+      const photo = s.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=1e3a5f&color=fff&size=128`;
+      document.getElementById('viewBody').innerHTML = `
+        <div class="profile-header" style="margin-bottom:20px">
+          <img src="${photo}" alt="">
+          <div>
+            <h2>${s.name}</h2>
+            <p>${s.admissionNo} &bull; ${s.className} - ${s.section}</p>
+            <p><span class="badge badge-${s.status === 'active' ? 'success' : 'danger'}">${s.status}</span></p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div><strong>Father/Guardian:</strong><br>${s.fatherName || '-'}</div>
+          <div><strong>Gender:</strong><br>${s.gender || '-'}</div>
+          <div><strong>Date of Birth:</strong><br>${formatDate(s.dob)}</div>
+          <div><strong>Roll No:</strong><br>${s.rollNo || '-'}</div>
+          <div><strong>Phone:</strong><br>${s.phone || '-'}</div>
+          <div><strong>WhatsApp:</strong><br>${s.whatsapp || '-'} ${s.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${s.whatsapp}')"><i class="fab fa-whatsapp"></i></button>` : ''}</div>
+          <div><strong>Admission Date:</strong><br>${formatDate(s.admissionDate)}</div>
+          <div><strong>Blood Group:</strong><br>${s.bloodGroup || '-'}</div>
+          <div style="grid-column:1/-1"><strong>Address:</strong><br>${s.address || '-'}</div>
+        </div>`;
+      document.getElementById('viewModal').classList.add('show');
+    }
+
+    function printStudentProfile() {
+      window.print();
+    }
+  </script>
+</body>
+</html>

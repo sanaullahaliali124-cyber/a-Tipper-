@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="assets/logo/logo.svg" alt="School Logo">
+        <h1>THE SMART MODERN PUBLIC SCHOOL</h1>
+        <p>School Management System</p>
+      </div>
+
+      <div class="role-tabs" id="roleTabs">
+        <button class="role-tab active" data-role="admin">Admin</button>
+        <button class="role-tab" data-role="teacher">Teacher</button>
+        <button class="role-tab" data-role="student">Student</button>
+        <button class="role-tab" data-role="parent">Parent</button>
+        <button class="role-tab" data-role="staff">Staff</button>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Username / Email / Phone</label>
+          <input type="text" id="username" class="form-control" placeholder="Enter username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+          <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Show password">
+            <i class="fas fa-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe">Remember me</label>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p><a href="#" onclick="showForgot(); return false;">Forgot password?</a></p>
+        <p style="margin-top:12px">
+          <a href="#" class="whatsapp-link" onclick="openWhatsApp('03304886710'); return false;">
+            <i class="fab fa-whatsapp"></i> WhatsApp: 03304886710
+          </a>
+        </p>
+        <p style="margin-top:8px;font-size:0.8rem;color:#999">
+          Default Admin: <strong>admin</strong> / <strong>admin123</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let selectedRole = 'admin';
+
+    // Redirect if already logged in
+    if (getSession()) {
+      window.location.href = 'dashboard.html';
+    }
+
+    document.querySelectorAll('.role-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        selectedRole = tab.dataset.role;
+        // Pre-fill for convenience
+        const creds = DEFAULT_CREDS[selectedRole];
+        if (creds) {
+          document.getElementById('username').value = creds.user;
+          document.getElementById('password').value = creds.pass;
+        }
+      });
+    });
+
+    // Pre-fill admin
+    document.getElementById('username').value = 'admin';
+    document.getElementById('password').value = 'admin123';
+
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const result = login(username, password, selectedRole);
+      if (result.success) {
+        showToast('Welcome, ' + result.user.name + '!');
+        setTimeout(() => window.location.href = 'dashboard.html', 600);
+      } else {
+        showToast(result.message || 'Login failed', 'error');
+      }
+    }
+
+    function showForgot() {
+      showToast('Please contact school admin via WhatsApp: 03304886710', 'info');
+    }
+  </script>
+</body>
+</html>

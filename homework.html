@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Homework</div>
+            <h1>Homework</h1>
+          </div>
+          <button class="btn btn-primary no-print" id="addBtn" onclick="openAddModal()" style="display:none">
+            <i class="fas fa-plus"></i> Add New
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="filters-bar no-print">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search..." oninput="renderList()">
+              </div>
+            </div>
+            <div id="listContainer"></div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add</h3>
+        <button class="modal-close" onclick="closeAddModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveItem()"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </div>
+  </div>
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/modules.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage('homework');
+    });
+  </script>
+</body>
+</html>

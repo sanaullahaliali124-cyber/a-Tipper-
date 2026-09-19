@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Dashboard</div>
+            <h1>Welcome, <span id="welcomeName">Admin</span></h1>
+            <p class="subtitle" id="currentDate"></p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline btn-sm" onclick="window.location.href='whatsapp.html'">
+              <i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp Center
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Student Enrollment Trend</h3>
+            <div class="chart-container"><canvas id="enrollChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Monthly Fee Collection</h3>
+            <div class="chart-container"><canvas id="feeLineChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Class-wise Students</h3>
+            <div class="chart-container"><canvas id="classChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Gender Distribution</h3>
+            <div class="chart-container"><canvas id="genderChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Fee Status</h3>
+            <div class="chart-container"><canvas id="feeChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Teacher / Staff Distribution</h3>
+            <div class="chart-container"><canvas id="staffChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-bullhorn"></i> Recent Notices</h2>
+            <a href="notices.html" class="btn btn-outline btn-sm">View All</a>
+          </div>
+          <div class="card-body" id="recentNotices"></div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth();
+      if (!session) return;
+      renderLayout('dashboard');
+      document.getElementById('welcomeName').textContent = session.name.split(' ')[0];
+
+      const stats = getDashboardStats();
+      const statsConfig = [
+        { label: 'Total Students', value: stats.totalStudents, icon: 'fa-user-graduate', color: 'blue', href: 'students.html', change: '+2 this month' },
+        { label: 'Total Teachers', value: stats.totalTeachers, icon: 'fa-chalkboard-teacher', color: 'green', href: 'teachers.html', change: '' },
+        { label: 'Total Parents', value: stats.totalParents, icon: 'fa-users', color: 'purple', href: 'parents.html', change: '' },
+        { label: 'Total Staff', value: stats.totalStaff, icon: 'fa-user-tie', color: 'teal', href: 'staff.html', change: '' },
+        { label: 'Total Classes', value: stats.totalClasses, icon: 'fa-school', color: 'orange', href: 'classes.html', change: '' },
+        { label: "Today's Attendance", value: stats.todayAttendance, icon: 'fa-clipboard-check', color: 'green', href: 'attendance.html', change: '' },
+        { label: 'Monthly Fee Collection', value: formatCurrency(stats.monthlyFeeCollection), icon: 'fa-money-bill-wave', color: 'blue', href: 'fees.html', change: '' },
+        { label: 'Pending Fees', value: formatCurrency(stats.pendingFees), icon: 'fa-exclamation-circle', color: 'red', href: 'fees.html', change: '' },
+        { label: 'New Admissions', value: stats.newAdmissions, icon: 'fa-user-plus', color: 'orange', href: 'admissions.html', change: '' },
+        { label: 'Pending Leaves', value: stats.pendingLeaves, icon: 'fa-calendar-times', color: 'purple', href: 'leave.html', change: '' }
+      ];
+
+      // Role-based stats visibility
+      let filtered = statsConfig;
+      if (session.role === 'teacher') filtered = statsConfig.filter((_, i) => [0,5].includes(i));
+      if (session.role === 'student' || session.role === 'parent') filtered = statsConfig.filter((_, i) => [0,5,6,7].includes(i));
+      if (session.role === 'staff') filtered = statsConfig.slice(0, 4);
+
+      document.getElementById('statsGrid').innerHTML = filtered.map(s => `
+        <div class="stat-card" onclick="window.location.href='${s.href}'">
+          <div class="stat-icon ${s.color}"><i class="fas ${s.icon}"></i></div>
+          <div class="stat-info">
+            <h3>${s.value}</h3>
+            <p>${s.label}</p>
+            ${s.change ? `<div class="stat-change up"><i class="fas fa-arrow-up"></i> ${s.change}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      // Charts — enrollment trend (from admission dates)
+      const studentsAll = getData(STORAGE_KEYS.students);
+      const monthLabels = [];
+      const enrollCounts = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const key = d.toISOString().substring(0, 7);
+        monthLabels.push(d.toLocaleString('en', { month: 'short', year: '2-digit' }));
+        enrollCounts.push(studentsAll.filter(s => (s.admissionDate || '').startsWith(key)).length || (i === 0 ? studentsAll.length : Math.max(0, studentsAll.length - (5 - i))));
+      }
+      // cumulative-style display if sparse data
+      let cum = 0;
+      const enrollCum = enrollCounts.map((c, i) => { cum += c || (i === 5 ? studentsAll.length : 1); return cum; });
+      new Chart(document.getElementById('enrollChart'), {
+        type: 'line',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Enrollment',
+            data: enrollCum,
+            borderColor: '#2c5aa0',
+            backgroundColor: 'rgba(44,90,160,0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      // Monthly fee collection line
+      const feesAll = getData(STORAGE_KEYS.fees);
+      const feeMonthData = monthLabels.map((_, i) => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - (5 - i));
+        const key = d.toISOString().substring(0, 7);
+        return feesAll.filter(f => f.status === 'paid' && (f.month || f.paymentDate || '').startsWith(key))
+          .reduce((s, f) => s + Number(f.paid || 0), 0);
+      });
+      new Chart(document.getElementById('feeLineChart'), {
+        type: 'line',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: 'Collection (Rs)',
+            data: feeMonthData,
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40,167,69,0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      const classData = getClassWiseStudents();
+      new Chart(document.getElementById('classChart'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(classData),
+          datasets: [{
+            label: 'Students',
+            data: Object.values(classData),
+            backgroundColor: 'rgba(44, 90, 160, 0.75)',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      const gender = getGenderDistribution();
+      new Chart(document.getElementById('genderChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Male', 'Female'],
+          datasets: [{
+            data: [gender.male, gender.female],
+            backgroundColor: ['#2c5aa0', '#f0a500'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      const feeStatus = getFeeStatusCounts();
+      new Chart(document.getElementById('feeChart'), {
+        type: 'pie',
+        data: {
+          labels: ['Paid', 'Pending', 'Partial'],
+          datasets: [{
+            data: [feeStatus.paid, feeStatus.pending, feeStatus.partial],
+            backgroundColor: ['#28a745', '#dc3545', '#ffc107'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      const teachers = getData(STORAGE_KEYS.teachers).filter(t => t.status === 'active').length;
+      const staff = getData(STORAGE_KEYS.staff).filter(s => s.status === 'active').length;
+      new Chart(document.getElementById('staffChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Teachers', 'Staff'],
+          datasets: [{
+            label: 'Count',
+            data: [teachers, staff],
+            backgroundColor: ['#2c5aa0', '#17a2b8'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+
+      // Notices
+      const notices = getData(STORAGE_KEYS.notices).filter(n => n.published).slice(0, 5);
+      const noticesEl = document.getElementById('recentNotices');
+      if (notices.length === 0) {
+        noticesEl.innerHTML = '<div class="empty-state"><i class="fas fa-bullhorn"></i><h3>No notices yet</h3></div>';
+      } else {
+        noticesEl.innerHTML = notices.map(n => `
+          <div style="padding:12px 0;border-bottom:1px solid var(--gray-light)">
+            <div class="fw-bold">${n.title}</div>
+            <div class="text-muted" style="font-size:0.85rem;margin-top:4px">${n.content.substring(0, 120)}${n.content.length > 120 ? '...' : ''}</div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+              <i class="fas fa-calendar"></i> ${formatDate(n.date)} &nbsp; <span class="badge badge-primary">${n.audience}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+  </script>
+</body>
+</html>

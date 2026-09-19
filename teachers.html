@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teachers | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Teachers</div>
+            <h1>Teacher Management</h1>
+          </div>
+          <button class="btn btn-primary no-print" onclick="openTeacherModal()" id="addBtn">
+            <i class="fas fa-plus"></i> Add Teacher
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="filters-bar no-print">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search teachers..." oninput="renderTeachers()">
+              </div>
+              <select class="form-select" id="filterStatus" onchange="renderTeachers()">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Photo</th><th>Teacher ID</th><th>Name</th><th>Subject</th><th>Classes</th>
+                    <th>Phone</th><th>WhatsApp</th><th>Status</th><th class="no-print">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="teachersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="teacherModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Teacher</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="teacherForm">
+          <input type="hidden" id="tId">
+          <div class="form-row">
+            <div><label class="form-label">Full Name <span class="required">*</span></label>
+              <input type="text" class="form-control" id="tName" required></div>
+            <div><label class="form-label">Teacher ID <span class="required">*</span></label>
+              <input type="text" class="form-control" id="tTeacherId" required></div>
+          </div>
+          <div class="form-row">
+            <div><label class="form-label">Subject <span class="required">*</span></label>
+              <input type="text" class="form-control" id="tSubject" required></div>
+            <div><label class="form-label">Qualification</label>
+              <input type="text" class="form-control" id="tQual"></div>
+          </div>
+          <div class="form-row">
+            <div><label class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="tPhone"></div>
+            <div><label class="form-label">WhatsApp <span class="required">*</span></label>
+              <input type="tel" class="form-control" id="tWhatsapp" required></div>
+          </div>
+          <div class="form-row">
+            <div><label class="form-label">Email</label>
+              <input type="email" class="form-control" id="tEmail"></div>
+            <div><label class="form-label">Joining Date</label>
+              <input type="date" class="form-control" id="tJoin"></div>
+          </div>
+          <div class="form-row">
+            <div><label class="form-label">Salary</label>
+              <input type="number" class="form-control" id="tSalary"></div>
+            <div><label class="form-label">Status</label>
+              <select class="form-select" id="tStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+          </div>
+          <div class="form-row">
+            <div style="grid-column:1/-1"><label class="form-label">Address</label>
+              <textarea class="form-textarea" id="tAddress" rows="2"></textarea></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTeacher()"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/teachers.js"></script>
+  <script>
+    let editingId = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth(['admin']);
+      if (!session) return;
+      renderLayout('teachers');
+      renderTeachers();
+    });
+
+    function renderTeachers() {
+      let list = getData(STORAGE_KEYS.teachers);
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const st = document.getElementById('filterStatus')?.value || '';
+      list = list.filter(t => {
+        if (q && !(t.name + t.teacherId + t.subject + t.phone).toLowerCase().includes(q)) return false;
+        if (st && t.status !== st) return false;
+        return true;
+      });
+      document.getElementById('teachersBody').innerHTML = list.map(t => {
+        const photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=28a745&color=fff&size=72`;
+        return `<tr>
+          <td><img class="avatar" src="${photo}"></td>
+          <td>${t.teacherId}</td>
+          <td class="fw-bold">${t.name}</td>
+          <td>${t.subject || '-'}</td>
+          <td>${(t.classes || []).join(', ') || '-'}</td>
+          <td>${t.phone || '-'}</td>
+          <td>${t.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${t.whatsapp}')"><i class="fab fa-whatsapp"></i></button>` : '-'}</td>
+          <td><span class="badge badge-${t.status === 'active' ? 'success' : 'danger'}">${t.status}</span></td>
+          <td class="no-print"><div class="action-btns">
+            <button class="btn btn-icon btn-outline" onclick="editTeacher('${t.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-icon btn-outline" onclick="deleteTeacher('${t.id}')"><i class="fas fa-trash text-danger"></i></button>
+          </div></td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="9" class="text-muted" style="text-align:center;padding:30px">No teachers found</td></tr>';
+    }
+
+    function openTeacherModal(id = null) {
+      editingId = id;
+      document.getElementById('modalTitle').textContent = id ? 'Edit Teacher' : 'Add Teacher';
+      document.getElementById('teacherForm').reset();
+      if (id) {
+        const t = getData(STORAGE_KEYS.teachers).find(x => x.id === id);
+        if (t) {
+          document.getElementById('tId').value = t.id;
+          document.getElementById('tName').value = t.name || '';
+          document.getElementById('tTeacherId').value = t.teacherId || '';
+          document.getElementById('tSubject').value = t.subject || '';
+          document.getElementById('tQual').value = t.qualification || '';
+          document.getElementById('tPhone').value = t.phone || '';
+          document.getElementById('tWhatsapp').value = t.whatsapp || '';
+          document.getElementById('tEmail').value = t.email || '';
+          document.getElementById('tJoin').value = t.joiningDate || '';
+          document.getElementById('tSalary').value = t.salary || '';
+          document.getElementById('tStatus').value = t.status || 'active';
+          document.getElementById('tAddress').value = t.address || '';
+        }
+      } else {
+        const n = getData(STORAGE_KEYS.teachers).length + 1001;
+        document.getElementById('tTeacherId').value = 'T-' + n;
+        document.getElementById('tJoin').value = today();
+      }
+      document.getElementById('teacherModal').classList.add('show');
+    }
+    function closeModal() { document.getElementById('teacherModal').classList.remove('show'); }
+
+    function saveTeacher() {
+      if (!document.getElementById('teacherForm').checkValidity()) {
+        document.getElementById('teacherForm').reportValidity(); return;
+      }
+      const list = getData(STORAGE_KEYS.teachers);
+      const data = {
+        name: document.getElementById('tName').value.trim(),
+        teacherId: document.getElementById('tTeacherId').value.trim(),
+        subject: document.getElementById('tSubject').value.trim(),
+        qualification: document.getElementById('tQual').value.trim(),
+        phone: document.getElementById('tPhone').value.trim(),
+        whatsapp: document.getElementById('tWhatsapp').value.trim(),
+        email: document.getElementById('tEmail').value.trim(),
+        joiningDate: document.getElementById('tJoin').value,
+        salary: Number(document.getElementById('tSalary').value) || 0,
+        status: document.getElementById('tStatus').value,
+        address: document.getElementById('tAddress').value.trim(),
+        classes: [], password: 'teacher123'
+      };
+      if (editingId) {
+        const i = list.findIndex(x => x.id === editingId);
+        if (i !== -1) { list[i] = { ...list[i], ...data }; showToast('Teacher updated'); }
+      } else {
+        data.id = generateId('TCH');
+        list.push(data);
+        showToast('Teacher added');
+      }
+      setData(STORAGE_KEYS.teachers, list);
+      logActivity(editingId ? 'Update Teacher' : 'Add Teacher', data.name);
+      closeModal();
+      renderTeachers();
+    }
+    function editTeacher(id) { openTeacherModal(id); }
+    function deleteTeacher(id) {
+      confirmModal('Delete Teacher', 'Are you sure?', () => {
+        setData(STORAGE_KEYS.teachers, getData(STORAGE_KEYS.teachers).filter(x => x.id !== id));
+        showToast('Teacher deleted');
+        renderTeachers();
+      });
+    }
+  </script>
+</body>
+</html>

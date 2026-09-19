@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <script>
+    // Redirect to login or dashboard
+    try {
+      const session = localStorage.getItem('smps_session');
+      if (session) window.location.href = 'dashboard.html';
+      else window.location.href = 'login.html';
+    } catch(e) {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <p style="text-align:center;padding:40px;font-family:sans-serif">Loading THE SMART MODERN PUBLIC SCHOOL...</p>
+</body>
+</html>

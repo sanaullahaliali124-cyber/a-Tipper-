@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fees | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Fees</div>
+            <h1>Fees Management</h1>
+          </div>
+          <button class="btn btn-primary no-print" onclick="openFeeModal()" id="addFeeBtn">
+            <i class="fas fa-plus"></i> Collect / Add Fee
+          </button>
+        </div>
+        <div class="stats-grid" id="feeStats"></div>
+        <div class="card">
+          <div class="card-body">
+            <div class="filters-bar no-print">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search student, receipt..." oninput="renderFees()">
+              </div>
+              <select class="form-select" id="filterStatus" onchange="renderFees()">
+                <option value="">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="partial">Partial</option>
+              </select>
+              <select class="form-select" id="filterType" onchange="renderFees()">
+                <option value="">All Types</option>
+                <option>Monthly Fee</option>
+                <option>Admission Fee</option>
+                <option>Annual Fee</option>
+                <option>Exam Fee</option>
+                <option>Computer Fee</option>
+                <option>Transport Fee</option>
+                <option>Other Fee</option>
+              </select>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Receipt</th><th>Student</th><th>Class</th><th>Fee Type</th><th>Month</th>
+                    <th>Amount</th><th>Paid</th><th>Status</th><th>Date</th><th class="no-print">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="feesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="feeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add / Collect Fee</h3>
+        <button class="modal-close" onclick="closeFeeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="feeForm">
+          <input type="hidden" id="feeId">
+          <div class="form-row">
+            <div style="grid-column:1/-1">
+              <label class="form-label">Student <span class="required">*</span></label>
+              <select class="form-select" id="fStudent" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Fee Type <span class="required">*</span></label>
+              <select class="form-select" id="fType" required>
+                <option>Monthly Fee</option><option>Admission Fee</option><option>Annual Fee</option>
+                <option>Exam Fee</option><option>Computer Fee</option><option>Transport Fee</option><option>Other Fee</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Month</label>
+              <input type="month" class="form-control" id="fMonth">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Amount <span class="required">*</span></label>
+              <input type="number" class="form-control" id="fAmount" required min="0">
+            </div>
+            <div>
+              <label class="form-label">Discount</label>
+              <input type="number" class="form-control" id="fDiscount" value="0" min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Paid Amount</label>
+              <input type="number" class="form-control" id="fPaid" min="0">
+            </div>
+            <div>
+              <label class="form-label">Payment Method</label>
+              <select class="form-select" id="fMethod">
+                <option>Cash</option><option>Bank Transfer</option><option>JazzCash</option><option>EasyPaisa</option><option>Cheque</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Status</label>
+              <select class="form-select" id="fStatus">
+                <option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Payment Date</label>
+              <input type="date" class="form-control" id="fDate">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeFeeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveFee()"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/fees.js"></script>
+  <script>
+    let editingId = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth(['admin', 'student', 'parent']);
+      if (!session) return;
+      renderLayout('fees');
+      if (session.role !== 'admin') document.getElementById('addFeeBtn').style.display = 'none';
+      const students = getData(STORAGE_KEYS.students).filter(s => s.status === 'active');
+      document.getElementById('fStudent').innerHTML = '<option value="">Select student</option>' +
+        students.map(s => `<option value="${s.id}" data-name="${s.name}" data-adm="${s.admissionNo}" data-class="${s.className}">${s.name} (${s.admissionNo})</option>`).join('');
+      document.getElementById('fMonth').value = today().substring(0, 7);
+      document.getElementById('fDate').value = today();
+      renderFeeStats();
+      renderFees();
+    });
+
+    function renderFeeStats() {
+      const fees = getData(STORAGE_KEYS.fees);
+      const month = today().substring(0, 7);
+      const collected = fees.filter(f => f.status === 'paid' && f.month === month).reduce((s, f) => s + Number(f.paid || 0), 0);
+      const pending = fees.filter(f => f.status === 'pending').reduce((s, f) => s + (Number(f.amount) - Number(f.paid || 0)), 0);
+      document.getElementById('feeStats').innerHTML = `
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info"><h3>${formatCurrency(collected)}</h3><p>This Month Collected</p></div></div>
+        <div class="stat-card"><div class="stat-icon red"><i class="fas fa-clock"></i></div>
+          <div class="stat-info"><h3>${formatCurrency(pending)}</h3><p>Pending Fees</p></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-file-invoice"></i></div>
+          <div class="stat-info"><h3>${fees.length}</h3><p>Total Records</p></div></div>`;
+    }
+
+    function renderFees() {
+      let fees = getData(STORAGE_KEYS.fees);
+      const session = getSession();
+      if (session.role === 'student') fees = fees.filter(f => f.studentId === session.id);
+      else if (session.role === 'parent') {
+        const parent = getData(STORAGE_KEYS.parents).find(p => p.id === session.id);
+        const ids = parent?.studentIds || [];
+        fees = fees.filter(f => ids.includes(f.studentId));
+      }
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const st = document.getElementById('filterStatus')?.value || '';
+      const ty = document.getElementById('filterType')?.value || '';
+      fees = fees.filter(f => {
+        if (q && !(f.studentName + f.admissionNo + (f.receiptNo||'')).toLowerCase().includes(q)) return false;
+        if (st && f.status !== st) return false;
+        if (ty && f.feeType !== ty) return false;
+        return true;
+      });
+      document.getElementById('feesBody').innerHTML = fees.map(f => `<tr>
+        <td>${f.receiptNo || '-'}</td>
+        <td class="fw-bold">${f.studentName}<br><small class="text-muted">${f.admissionNo}</small></td>
+        <td>${f.className||'-'}</td><td>${f.feeType}</td><td>${f.month||'-'}</td>
+        <td>${formatCurrency(f.amount)}</td><td>${formatCurrency(f.paid)}</td>
+        <td><span class="badge badge-${f.status==='paid'?'success':f.status==='pending'?'danger':'warning'}">${f.status}</span></td>
+        <td>${formatDate(f.paymentDate)}</td>
+        <td class="no-print"><div class="action-btns">
+          ${getSession().role==='admin' ? `<button class="btn btn-icon btn-outline" onclick="editFee('${f.id}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-icon btn-outline" onclick="deleteFee('${f.id}')"><i class="fas fa-trash text-danger"></i></button>` : ''}
+          ${f.status==='paid' ? `<button class="btn btn-icon btn-outline" onclick="printReceipt('${f.id}')"><i class="fas fa-print"></i></button>` : ''}
+        </div></td>
+      </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;padding:24px" class="text-muted">No fee records</td></tr>';
+    }
+
+    function openFeeModal(id = null) {
+      editingId = id;
+      document.getElementById('feeForm').reset();
+      document.getElementById('fMonth').value = today().substring(0, 7);
+      document.getElementById('fDate').value = today();
+      document.getElementById('fStatus').value = 'paid';
+      if (id) {
+        const f = getData(STORAGE_KEYS.fees).find(x => x.id === id);
+        if (f) {
+          document.getElementById('feeId').value = f.id;
+          document.getElementById('fStudent').value = f.studentId;
+          document.getElementById('fType').value = f.feeType;
+          document.getElementById('fMonth').value = f.month || '';
+          document.getElementById('fAmount').value = f.amount;
+          document.getElementById('fDiscount').value = f.discount || 0;
+          document.getElementById('fPaid').value = f.paid || 0;
+          document.getElementById('fMethod').value = f.method || 'Cash';
+          document.getElementById('fStatus').value = f.status;
+          document.getElementById('fDate').value = f.paymentDate || '';
+        }
+      }
+      document.getElementById('feeModal').classList.add('show');
+    }
+    function closeFeeModal() { document.getElementById('feeModal').classList.remove('show'); }
+
+    function saveFee() {
+      if (!document.getElementById('feeForm').checkValidity()) {
+        document.getElementById('feeForm').reportValidity(); return;
+      }
+      const sel = document.getElementById('fStudent');
+      const opt = sel.options[sel.selectedIndex];
+      const amount = Number(document.getElementById('fAmount').value);
+      const paid = Number(document.getElementById('fPaid').value) || 0;
+      const discount = Number(document.getElementById('fDiscount').value) || 0;
+      let status = document.getElementById('fStatus').value;
+      if (paid >= amount - discount) status = 'paid';
+      else if (paid > 0) status = 'partial';
+      else status = 'pending';
+      const fees = getData(STORAGE_KEYS.fees);
+      const data = {
+        studentId: sel.value, studentName: opt.dataset.name, admissionNo: opt.dataset.adm,
+        className: opt.dataset.class, feeType: document.getElementById('fType').value,
+        month: document.getElementById('fMonth').value, amount, paid, discount, status,
+        paymentDate: status !== 'pending' ? (document.getElementById('fDate').value || today()) : null,
+        method: document.getElementById('fMethod').value, receiptNo: null
+      };
+      if (editingId) {
+        const i = fees.findIndex(x => x.id === editingId);
+        if (i !== -1) {
+          data.receiptNo = fees[i].receiptNo || (status === 'paid' ? 'RCPT-' + Date.now().toString().slice(-6) : null);
+          fees[i] = { ...fees[i], ...data };
+          showToast('Fee updated');
+        }
+      } else {
+        data.id = generateId('FEE');
+        data.receiptNo = status === 'paid' ? 'RCPT-' + Date.now().toString().slice(-6) : null;
+        fees.push(data);
+        showToast('Fee record saved');
+      }
+      setData(STORAGE_KEYS.fees, fees);
+      logActivity('Fee', data.studentName + ' - ' + data.feeType);
+      closeFeeModal();
+      renderFeeStats();
+      renderFees();
+    }
+    function editFee(id) { openFeeModal(id); }
+    function deleteFee(id) {
+      confirmModal('Delete Fee Record', 'Are you sure?', () => {
+        setData(STORAGE_KEYS.fees, getData(STORAGE_KEYS.fees).filter(x => x.id !== id));
+        showToast('Deleted');
+        renderFeeStats();
+        renderFees();
+      });
+    }
+    function printReceipt(id) {
+      const f = getData(STORAGE_KEYS.fees).find(x => x.id === id);
+      if (!f) return;
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html><head><title>Receipt</title>
+        <style>body{font-family:sans-serif;padding:40px;max-width:480px;margin:auto}
+        h1{color:#1e3a5f;font-size:1.15rem}.row{display:flex;justify-content:space-between;margin:8px 0}
+        hr{border:none;border-top:1px solid #ddd;margin:16px 0}</style></head><body>
+        <h1>THE SMART MODERN PUBLIC SCHOOL</h1><p>Fee Receipt</p><hr>
+        <div class="row"><span>Receipt:</span><strong>${f.receiptNo}</strong></div>
+        <div class="row"><span>Student:</span><strong>${f.studentName}</strong></div>
+        <div class="row"><span>Adm No:</span><strong>${f.admissionNo}</strong></div>
+        <div class="row"><span>Class:</span><strong>${f.className}</strong></div>
+        <div class="row"><span>Type:</span><strong>${f.feeType}</strong></div>
+        <div class="row"><span>Amount:</span><strong>Rs. ${Number(f.amount).toLocaleString()}</strong></div>
+        <div class="row"><span>Paid:</span><strong>Rs. ${Number(f.paid).toLocaleString()}</strong></div>
+        <div class="row"><span>Method:</span><strong>${f.method||'-'}</strong></div>
+        <div class="row"><span>Date:</span><strong>${f.paymentDate||'-'}</strong></div>
+        <hr><p style="text-align:center;color:#666;font-size:0.85rem">WhatsApp: 03304886710</p>
+        <script>window.print()<\/script></body></html>`);
+      w.document.close();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Center | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / WhatsApp Center</div>
+            <h1><i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp Center</h1>
+          </div>
+        </div>
+
+        <!-- School WhatsApp -->
+        <div class="card">
+          <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div class="d-flex align-center gap-3">
+              <div class="stat-icon green" style="width:60px;height:60px;font-size:1.8rem"><i class="fab fa-whatsapp"></i></div>
+              <div>
+                <h2 style="font-size:1.2rem;color:var(--primary-dark)">School WhatsApp</h2>
+                <p style="font-size:1.4rem;font-weight:700;color:#25D366" id="schoolWa">03304886710</p>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="wa-btn wa-btn-lg" onclick="openWhatsApp(document.getElementById('schoolWa').textContent)">
+                <i class="fab fa-whatsapp"></i> Open WhatsApp
+              </button>
+              <button class="btn btn-outline" onclick="copyToClipboard(document.getElementById('schoolWa').textContent)">
+                <i class="fas fa-copy"></i> Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+          <div class="card-header">
+            <div class="d-flex gap-2" style="flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" id="tabStudents" onclick="showTab('students')">Student Contacts</button>
+              <button class="btn btn-outline btn-sm" id="tabTeachers" onclick="showTab('teachers')">Teacher Contacts</button>
+              <button class="btn btn-outline btn-sm" id="tabParents" onclick="showTab('parents')">Parent Contacts</button>
+              <button class="btn btn-outline btn-sm" id="tabStaff" onclick="showTab('staff')">Staff Contacts</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="filters-bar">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="waSearch" placeholder="Search contacts..." oninput="renderContacts()">
+              </div>
+              <select class="form-select" id="waClassFilter" onchange="renderContacts()" style="display:none">
+                <option value="">All Classes</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead id="waHead"></thead>
+                <tbody id="waBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script>
+    let currentTab = 'students';
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth(['admin', 'teacher', 'staff']);
+      if (!session) return;
+      renderLayout('whatsapp');
+      const settings = getSettings();
+      document.getElementById('schoolWa').textContent = settings.schoolWhatsapp || SCHOOL.whatsapp;
+      const classes = getData(STORAGE_KEYS.classes);
+      classes.forEach(c => {
+        document.getElementById('waClassFilter').innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+      showTab('students');
+    });
+
+    function showTab(tab) {
+      currentTab = tab;
+      ['students','teachers','parents','staff'].forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) {
+          btn.className = t === tab ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+        }
+      });
+      document.getElementById('waClassFilter').style.display = tab === 'students' ? '' : 'none';
+      renderContacts();
+    }
+
+    function renderContacts() {
+      const q = (document.getElementById('waSearch')?.value || '').toLowerCase();
+      const fClass = document.getElementById('waClassFilter')?.value || '';
+      let html = '', head = '';
+
+      if (currentTab === 'students') {
+        head = '<tr><th>Student Name</th><th>Admission No</th><th>Class</th><th>Section</th><th>Father/Guardian</th><th>WhatsApp</th><th>Alt Number</th><th>Status</th><th>Action</th></tr>';
+        let list = getData(STORAGE_KEYS.students);
+        list = list.filter(s => {
+          if (q && !(s.name + s.admissionNo + s.whatsapp + (s.fatherName||'')).toLowerCase().includes(q)) return false;
+          if (fClass && s.className !== fClass) return false;
+          return true;
+        });
+        html = list.map(s => `<tr>
+          <td class="fw-bold">${s.name}</td>
+          <td>${s.admissionNo}</td>
+          <td>${s.className||'-'}</td>
+          <td>${s.section||'-'}</td>
+          <td>${s.fatherName||'-'}</td>
+          <td>${s.whatsapp||'-'}</td>
+          <td>${s.altPhone||'-'}</td>
+          <td><span class="badge badge-${s.status==='active'?'success':'danger'}">${s.status}</span></td>
+          <td>
+            ${s.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${s.whatsapp}')"><i class="fab fa-whatsapp"></i> Chat</button>
+            <button class="btn btn-icon btn-outline btn-sm" onclick="copyToClipboard('${s.whatsapp}')"><i class="fas fa-copy"></i></button>` : '-'}
+          </td>
+        </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;padding:24px" class="text-muted">No contacts</td></tr>';
+      } else if (currentTab === 'teachers') {
+        head = '<tr><th>Teacher Name</th><th>Teacher ID</th><th>Subject</th><th>Phone</th><th>WhatsApp</th><th>Status</th><th>Action</th></tr>';
+        let list = getData(STORAGE_KEYS.teachers);
+        list = list.filter(t => !q || (t.name + t.teacherId + t.whatsapp).toLowerCase().includes(q));
+        html = list.map(t => `<tr>
+          <td class="fw-bold">${t.name}</td><td>${t.teacherId}</td><td>${t.subject||'-'}</td>
+          <td>${t.phone||'-'}</td><td>${t.whatsapp||'-'}</td>
+          <td><span class="badge badge-${t.status==='active'?'success':'danger'}">${t.status}</span></td>
+          <td>${t.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${t.whatsapp}')"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn btn-icon btn-outline btn-sm" onclick="copyToClipboard('${t.whatsapp}')"><i class="fas fa-copy"></i></button>` : '-'}</td>
+        </tr>`).join('') || '<tr><td colspan="7" style="text-align:center" class="text-muted">No contacts</td></tr>';
+      } else if (currentTab === 'parents') {
+        head = '<tr><th>Parent Name</th><th>Relation</th><th>Phone</th><th>WhatsApp</th><th>Status</th><th>Action</th></tr>';
+        let list = getData(STORAGE_KEYS.parents);
+        list = list.filter(p => !q || (p.name + p.phone + p.whatsapp).toLowerCase().includes(q));
+        html = list.map(p => `<tr>
+          <td class="fw-bold">${p.name}</td><td>${p.relation||'-'}</td><td>${p.phone||'-'}</td><td>${p.whatsapp||'-'}</td>
+          <td><span class="badge badge-${p.status==='active'?'success':'danger'}">${p.status}</span></td>
+          <td>${p.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${p.whatsapp}')"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn btn-icon btn-outline btn-sm" onclick="copyToClipboard('${p.whatsapp}')"><i class="fas fa-copy"></i></button>` : '-'}</td>
+        </tr>`).join('') || '<tr><td colspan="6" style="text-align:center" class="text-muted">No contacts</td></tr>';
+      } else {
+        head = '<tr><th>Staff Name</th><th>Staff ID</th><th>Category</th><th>Phone</th><th>WhatsApp</th><th>Status</th><th>Action</th></tr>';
+        let list = getData(STORAGE_KEYS.staff);
+        list = list.filter(s => !q || (s.name + s.staffId + s.whatsapp).toLowerCase().includes(q));
+        html = list.map(s => `<tr>
+          <td class="fw-bold">${s.name}</td><td>${s.staffId}</td><td>${s.category||'-'}</td>
+          <td>${s.phone||'-'}</td><td>${s.whatsapp||'-'}</td>
+          <td><span class="badge badge-${s.status==='active'?'success':'danger'}">${s.status}</span></td>
+          <td>${s.whatsapp ? `<button class="wa-btn" onclick="openWhatsApp('${s.whatsapp}')"><i class="fab fa-whatsapp"></i></button>
+            <button class="btn btn-icon btn-outline btn-sm" onclick="copyToClipboard('${s.whatsapp}')"><i class="fas fa-copy"></i></button>` : '-'}</td>
+        </tr>`).join('') || '<tr><td colspan="7" style="text-align:center" class="text-muted">No contacts</td></tr>';
+      }
+      document.getElementById('waHead').innerHTML = head;
+      document.getElementById('waBody').innerHTML = html;
+    }
+  </script>
+</body>
+</html>

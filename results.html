@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results | THE SMART MODERN PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Results</div>
+            <h1>Exam Results</h1>
+          </div>
+          <button class="btn btn-primary no-print" id="addBtn" onclick="openResultModal()">
+            <i class="fas fa-plus"></i> Enter Marks
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="filters-bar no-print">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search student, exam..." oninput="renderResults()">
+              </div>
+              <select class="form-select" id="filterClass" onchange="renderResults()">
+                <option value="">All Classes</option>
+              </select>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Admission No</th>
+                    <th>Class</th>
+                    <th>Exam</th>
+                    <th>Subject</th>
+                    <th>Obtained</th>
+                    <th>Total</th>
+                    <th>%</th>
+                    <th>Grade</th>
+                    <th class="no-print">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="app-footer" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Enter Result Marks</h3>
+        <button class="modal-close" onclick="closeResultModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="resultForm">
+          <div class="form-row">
+            <div style="grid-column:1/-1">
+              <label class="form-label">Student <span class="required">*</span></label>
+              <select class="form-select" id="rStudent" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Exam Name <span class="required">*</span></label>
+              <input type="text" class="form-control" id="rExam" required placeholder="e.g. Mid Term 2026">
+            </div>
+            <div>
+              <label class="form-label">Subject <span class="required">*</span></label>
+              <input type="text" class="form-control" id="rSubject" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Total Marks <span class="required">*</span></label>
+              <input type="number" class="form-control" id="rTotal" required min="1" value="100">
+            </div>
+            <div>
+              <label class="form-label">Obtained Marks <span class="required">*</span></label>
+              <input type="number" class="form-control" id="rObtained" required min="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="form-label">Remarks</label>
+              <input type="text" class="form-control" id="rRemarks">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeResultModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveResult()"><i class="fas fa-save"></i> Save Result</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const session = requireAuth(['admin', 'teacher', 'student', 'parent']);
+      if (!session) return;
+      renderLayout('exams');
+      if (session.role === 'student' || session.role === 'parent') {
+        document.getElementById('addBtn').style.display = 'none';
+      }
+      const classes = getData(STORAGE_KEYS.classes);
+      classes.forEach(c => {
+        document.getElementById('filterClass').innerHTML += `<option value="${c.name}">${c.name}</option>`;
+      });
+      const students = getData(STORAGE_KEYS.students).filter(s => s.status === 'active');
+      document.getElementById('rStudent').innerHTML = '<option value="">Select student</option>' +
+        students.map(s => `<option value="${s.id}" data-name="${s.name}" data-adm="${s.admissionNo}" data-class="${s.className}">${s.name} (${s.admissionNo})</option>`).join('');
+      renderResults();
+    });
+
+    function calcGrade(pct) {
+      if (pct >= 90) return 'A+';
+      if (pct >= 80) return 'A';
+      if (pct >= 70) return 'B';
+      if (pct >= 60) return 'C';
+      if (pct >= 50) return 'D';
+      return 'F';
+    }
+
+    function renderResults() {
+      let list = getData(STORAGE_KEYS.results);
+      const session = getSession();
+      if (session.role === 'student') list = list.filter(r => r.studentId === session.id);
+      else if (session.role === 'parent') {
+        const parent = getData(STORAGE_KEYS.parents).find(p => p.id === session.id);
+        const ids = parent?.studentIds || [];
+        list = list.filter(r => ids.includes(r.studentId));
+      }
+      const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const fc = document.getElementById('filterClass')?.value || '';
+      list = list.filter(r => {
+        if (q && !(r.studentName + r.exam + r.subject + r.admissionNo).toLowerCase().includes(q)) return false;
+        if (fc && r.className !== fc) return false;
+        return true;
+      });
+      document.getElementById('resultsBody').innerHTML = list.map(r => `<tr>
+        <td class="fw-bold">${r.studentName}</td>
+        <td>${r.admissionNo}</td>
+        <td>${r.className||'-'}</td>
+        <td>${r.exam}</td>
+        <td>${r.subject}</td>
+        <td>${r.obtained}</td>
+        <td>${r.total}</td>
+        <td>${r.percentage}%</td>
+        <td><span class="badge badge-${r.percentage >= 50 ? 'success' : 'danger'}">${r.grade}</span></td>
+        <td class="no-print"><div class="action-btns">
+          ${getSession().role === 'admin' || getSession().role === 'teacher' ?
+            `<button class="btn btn-icon btn-outline" onclick="deleteResult('${r.id}')"><i class="fas fa-trash text-danger"></i></button>` : ''}
+          <button class="btn btn-icon btn-outline" onclick="printResultCard('${r.id}')"><i class="fas fa-print"></i></button>
+        </div></td>
+      </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;padding:24px" class="text-muted">No results yet</td></tr>';
+    }
+
+    function openResultModal() {
+      document.getElementById('resultForm').reset();
+      document.getElementById('rTotal').value = 100;
+      document.getElementById('resultModal').classList.add('show');
+    }
+    function closeResultModal() {
+      document.getElementById('resultModal').classList.remove('show');
+    }
+
+    function saveResult() {
+      if (!document.getElementById('resultForm').checkValidity()) {
+        document.getElementById('resultForm').reportValidity();
+        return;
+      }
+      const sel = document.getElementById('rStudent');
+      const opt = sel.options[sel.selectedIndex];
+      const total = Number(document.getElementById('rTotal').value);
+      const obtained = Number(document.getElementById('rObtained').value);
+      if (obtained > total) {
+        showToast('Obtained marks cannot exceed total', 'error');
+        return;
+      }
+      const pct = Math.round((obtained / total) * 1000) / 10;
+      const list = getData(STORAGE_KEYS.results);
+      list.push({
+        id: generateId('RES'),
+        studentId: sel.value,
+        studentName: opt.dataset.name,
+        admissionNo: opt.dataset.adm,
+        className: opt.dataset.class,
+        exam: document.getElementById('rExam').value.trim(),
+        subject: document.getElementById('rSubject').value.trim(),
+        total,
+        obtained,
+        percentage: pct,
+        grade: calcGrade(pct),
+        remarks: document.getElementById('rRemarks').value.trim(),
+        date: today()
+      });
+      setData(STORAGE_KEYS.results, list);
+      showToast('Result saved');
+      logActivity('Result', opt.dataset.name);
+      closeResultModal();
+      renderResults();
+    }
+
+    function deleteResult(id) {
+      confirmModal('Delete Result', 'Are you sure?', () => {
+        setData(STORAGE_KEYS.results, getData(STORAGE_KEYS.results).filter(x => x.id !== id));
+        showToast('Deleted');
+        renderResults();
+      });
+    }
+
+    function printResultCard(id) {
+      const r = getData(STORAGE_KEYS.results).find(x => x.id === id);
+      if (!r) return;
+      const w = window.open('', '_blank');
+      w.document.write(`<!DOCTYPE html><html><head><title>Result Card</title>
+        <style>body{font-family:sans-serif;padding:40px;max-width:520px;margin:auto}
+        h1{color:#1e3a5f;font-size:1.2rem;text-align:center}
+        .row{display:flex;justify-content:space-between;margin:10px 0}
+        hr{border:none;border-top:1px solid #ddd;margin:16px 0}
+        .grade{font-size:2rem;font-weight:bold;text-align:center;color:#1e3a5f}</style></head><body>
+        <h1>THE SMART MODERN PUBLIC SCHOOL</h1>
+        <p style="text-align:center">Result Card</p><hr>
+        <div class="row"><span>Student:</span><strong>${r.studentName}</strong></div>
+        <div class="row"><span>Admission No:</span><strong>${r.admissionNo}</strong></div>
+        <div class="row"><span>Class:</span><strong>${r.className}</strong></div>
+        <div class="row"><span>Exam:</span><strong>${r.exam}</strong></div>
+        <div class="row"><span>Subject:</span><strong>${r.subject}</strong></div>
+        <div class="row"><span>Marks:</span><strong>${r.obtained} / ${r.total}</strong></div>
+        <div class="row"><span>Percentage:</span><strong>${r.percentage}%</strong></div>
+        <div class="grade">${r.grade}</div>
+        ${r.remarks ? '<p style="text-align:center">Remarks: ' + r.remarks + '</p>' : ''}
+        <hr><p style="text-align:center;color:#666;font-size:0.85rem">WhatsApp: 03304886710</p>
+        <script>window.print()<\/script></body></html>`);
+      w.document.close();
+    }
+  </script>
+</body>
+</html>
