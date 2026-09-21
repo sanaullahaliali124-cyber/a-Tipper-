@@ -1,22 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>THE SMART MODERN PUBLIC SCHOOL</title>
-  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
-  <script>
-    // Redirect to login or dashboard
-    try {
-      const session = localStorage.getItem('smps_session');
-      if (session) window.location.href = 'dashboard.html';
-      else window.location.href = 'login.html';
-    } catch(e) {
-      window.location.href = 'login.html';
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Smart Modern Public School — Login</title>
+  <link rel="icon" type="image/png" href="school-logo.png" />
+  <link rel="apple-touch-icon" href="school-logo.png" />
+  <style>
+    :root {
+      --navy: #12315a;
+      --navy-2: #0d2748;
+      --blue: #1e4f8a;
+      --btn: #1a4a8a;
+      --muted: #7a8699;
+      --border: #e6eaf0;
+      --bg: #12315a;
     }
-  </script>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      min-height: 100vh;
+      background: var(--bg);
+      color: #1a2433;
+    }
+    .wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 26px 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+    }
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .logo-wrap img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+    }
+    h1 {
+      text-align: center;
+      font-size: 18px;
+      letter-spacing: .4px;
+      color: var(--navy);
+      line-height: 1.25;
+      margin-top: 6px;
+    }
+    .sub {
+      text-align: center;
+      color: #9aa3b2;
+      font-size: 13px;
+      margin: 6px 0 18px;
+    }
+    .roles {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .roles button {
+      border: 1px solid #d9dee8;
+      background: #fff;
+      color: #5b6573;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .roles button.active {
+      background: var(--btn);
+      border-color: var(--btn);
+      color: #fff;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 10px 0 6px;
+    }
+    input[type="text"], input[type="password"], input[type="email"], input[type="tel"], textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fafbfc;
+    }
+    .pw-wrap { position: relative; }
+    .pw-wrap button.eye {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: none;
+      cursor: pointer;
+      color: #8a93a3;
+      font-size: 16px;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 16px;
+      font-size: 13px;
+      color: #555;
+    }
+    .signin {
+      width: 100%;
+      border: 0;
+      background: var(--btn);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .links {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .links a { color: var(--blue); text-decoration: none; }
+    .hint { color: #b0b7c3; font-size: 12px; margin-top: 8px; }
+    .err { color: #c0392b; font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+
+    /* App shell after login */
+    .app { display: none; min-height: 100vh; background: #f3f5f8; }
+    .top {
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .top img { width: 36px; height: 36px; object-fit: contain; background: #fff; border-radius: 8px; padding: 2px; }
+    .top h2 { font-size: 15px; font-weight: 600; flex: 1; }
+    .top button {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.35);
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .nav {
+      display: flex;
+      gap: 6px;
+      padding: 10px 14px;
+      overflow-x: auto;
+      background: #fff;
+      border-bottom: 1px solid #e8ecf1;
+    }
+    .nav button {
+      border: 0;
+      background: #eef2f7;
+      color: #334;
+      border-radius: 999px;
+      padding: 7px 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .nav button.on { background: var(--btn); color: #fff; }
+    .page { display: none; padding: 16px; max-width: 860px; margin: 0 auto; }
+    .page.on { display: block; }
+    .panel {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(16,36,70,.06);
+    }
+    .panel h3 { margin-bottom: 4px; color: var(--navy); }
+    .muted { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+    .save {
+      margin-top: 16px;
+      background: var(--btn);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .ok { color: #1e7a46; font-size: 13px; margin-top: 8px; display: none; }
+    .preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .preview img { width: 64px; height: 64px; object-fit: contain; border: 1px solid var(--border); border-radius: 10px; padding: 4px; background: #fff; }
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+    .stat { background: #fff; border-radius: 12px; padding: 14px; text-align: center; }
+    .stat b { display: block; font-size: 22px; color: var(--navy); }
+    .stat span { font-size: 12px; color: var(--muted); }
+  </style>
 </head>
 <body>
-  <p style="text-align:center;padding:40px;font-family:sans-serif">Loading THE SMART MODERN PUBLIC SCHOOL...</p>
+  <div class="wrap" id="loginScreen">
+    <div class="card">
+      <div class="logo-wrap">
+        <img src="school-logo.png" alt="School Logo" id="loginLogo" />
+      </div>
+      <h1 id="loginSchoolName">THE SMART MODERN PUBLIC<br>SCHOOL</h1>
+      <p class="sub">School Management System</p>
+
+      <div class="roles" id="roles">
+        <button type="button" data-role="admin">Admin</button>
+        <button type="button" data-role="teacher">Teacher</button>
+        <button type="button" data-role="student">Student</button>
+        <button type="button" data-role="parent" class="active">Parent</button>
+        <button type="button" data-role="staff">Staff</button>
+      </div>
+
+      <form id="loginForm" autocomplete="off">
+        <label>Username / Email / Phone</label>
+        <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="off" />
+
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="new-password" />
+          <button type="button" class="eye" id="togglePw" aria-label="Show password">👁</button>
+        </div>
+
+        <label class="remember"><input type="checkbox" id="remember" /> Remember me</label>
+        <button class="signin" type="submit">➔ Sign In</button>
+        <p class="err" id="loginErr">Galat username ya password.</p>
+      </form>
+
+      <div class="links">
+        <a href="#" id="forgot">Forgot password?</a>
+        <p style="margin-top:8px;color:#1e4f8a;font-size:13px;">WhatsApp: 03304886710</p>
+        <p class="hint">Default Admin: admin / admin123<br><small>Admin tab par click se password khud nahi bharega</small></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="appScreen">
+    <div class="top">
+      <img src="school-logo.png" alt="logo" id="appLogo" />
+      <h2 id="appTitle">The Smart Modern Public School</h2>
+      <button id="logoutBtn">Logout</button>
+    </div>
+    <div class="nav" id="nav">
+      <button data-page="dash" class="on">Dashboard</button>
+      <button data-page="settings">Settings</button>
+      <button data-page="profile">School Profile</button>
+    </div>
+
+    <section class="page on" id="page-dash">
+      <div class="stat-row">
+        <div class="stat"><b>0</b><span>Students</span></div>
+        <div class="stat"><b>0</b><span>Staff</span></div>
+        <div class="stat"><b>—</b><span>Today</span></div>
+      </div>
+      <div class="panel">
+        <h3>Welcome, Admin</h3>
+        <p class="muted">School profile aur branding Settings / School Profile se change karein.</p>
+      </div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="panel">
+        <h3>School Settings</h3>
+        <p class="muted">Yahan school ki branding, contact aur login defaults set karein.</p>
+
+        <div class="preview">
+          <img src="school-logo.png" id="setLogoPreview" alt="logo preview" />
+          <div>
+            <label>School Logo (icon / favicon / login)</label>
+            <input type="file" id="logoFile" accept="image/*" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>School Name</label>
+            <input type="text" id="setName" />
+          </div>
+          <div>
+            <label>Short Name / Tagline</label>
+            <input type="text" id="setTag" />
+          </div>
+          <div>
+            <label>WhatsApp Number</label>
+            <input type="tel" id="setWa" />
+          </div>
+          <div>
+            <label>Address</label>
+            <input type="text" id="setAddr" />
+          </div>
+          <div>
+            <label>Admin Username</label>
+            <input type="text" id="setAdminUser" />
+          </div>
+          <div>
+            <label>Admin Password</label>
+            <input type="text" id="setAdminPass" />
+          </div>
+        </div>
+
+        <label>Motto / About</label>
+        <textarea id="setMotto" rows="3"></textarea>
+
+        <label class="remember"><input type="checkbox" id="setAutofill" /> Admin tab par username/password auto-fill karein</label>
+        <p class="muted">Default: OFF — aapko khud likhna padega.</p>
+
+        <button class="save" id="saveSettings">Save Settings</button>
+        <p class="ok" id="setOk">Settings save ho gayi.</p>
+      </div>
+    </section>
+
+    <section class="page" id="page-profile">
+      <div class="panel">
+        <h3>School Profile</h3>
+        <p class="muted">Yeh profile login page, header aur reports par dikhegi.</p>
+        <div class="grid2">
+          <div>
+            <label>Principal Name</label>
+            <input type="text" id="setPrincipal" />
+          </div>
+          <div>
+            <label>Established Year</label>
+            <input type="text" id="setYear" />
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="setEmail" />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="tel" id="setPhone" />
+          </div>
+        </div>
+        <label>Website</label>
+        <input type="text" id="setWeb" />
+        <button class="save" id="saveProfile">Save Profile</button>
+        <p class="ok" id="proOk">Profile save ho gayi.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const DEFAULTS = {
+      name: "THE SMART MODERN PUBLIC SCHOOL",
+      tag: "School Management System",
+      wa: "03304886710",
+      addr: "Qamber",
+      adminUser: "admin",
+      adminPass: "admin123",
+      motto: "Quest for Excellence",
+      autofill: false,
+      principal: "",
+      year: "2007",
+      email: "",
+      phone: "03304886710",
+      web: "",
+      logoData: null
+    };
+
+    function loadSettings() {
+      try {
+        return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem("smps_settings") || "{}"));
+      } catch { return Object.assign({}, DEFAULTS); }
+    }
+    function saveSettingsObj(s) {
+      localStorage.setItem("smps_settings", JSON.stringify(s));
+    }
+
+    let settings = loadSettings();
+    let currentRole = "parent";
+
+    function applyBranding() {
+      document.getElementById("loginSchoolName").innerHTML = settings.name.replace(/ SCHOOL$/, "<br>SCHOOL");
+      document.querySelector(".sub").textContent = settings.tag || "School Management System";
+      document.getElementById("appTitle").textContent = settings.name;
+      document.title = settings.name + " — Login";
+      const src = settings.logoData || "school-logo.png";
+      ["loginLogo", "appLogo", "setLogoPreview"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = src;
+      });
+      const link = document.querySelector('link[rel="icon"]');
+      if (link) link.href = src;
+    }
+
+    function fillSettingsForm() {
+      setName.value = settings.name;
+      setTag.value = settings.tag;
+      setWa.value = settings.wa;
+      setAddr.value = settings.addr;
+      setAdminUser.value = settings.adminUser;
+      setAdminPass.value = settings.adminPass;
+      setMotto.value = settings.motto;
+      setAutofill.checked = !!settings.autofill;
+      setPrincipal.value = settings.principal;
+      setYear.value = settings.year;
+      setEmail.value = settings.email;
+      setPhone.value = settings.phone;
+      setWeb.value = settings.web;
+    }
+
+    document.getElementById("roles").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      currentRole = btn.dataset.role;
+      document.querySelectorAll("#roles button").forEach(b => b.classList.toggle("active", b === btn));
+      // Password kabhi auto-fill nahi — user ke request ke mutabiq
+      // Sirf agar settings.autofill ON ho aur role admin ho
+      if (settings.autofill && currentRole === "admin") {
+        username.value = settings.adminUser;
+        // password still empty unless they explicitly enabled autofill
+        password.value = settings.adminPass;
+      } else {
+        username.value = "";
+        password.value = "";
+      }
+      loginErr.style.display = "none";
+    });
+
+    togglePw.addEventListener("click", () => {
+      password.type = password.type === "password" ? "text" : "password";
+    });
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const u = username.value.trim();
+      const p = password.value;
+      if (currentRole !== "admin") {
+        loginErr.textContent = "Abhi sirf Admin login enable hai. Pehle Admin tab select karein.";
+        loginErr.style.display = "block";
+        return;
+      }
+      if (u === settings.adminUser && p === settings.adminPass) {
+        loginScreen.style.display = "none";
+        appScreen.style.display = "block";
+        fillSettingsForm();
+      } else {
+        loginErr.textContent = "Galat username ya password.";
+        loginErr.style.display = "block";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      appScreen.style.display = "none";
+      loginScreen.style.display = "flex";
+      username.value = "";
+      password.value = "";
+    });
+
+    document.getElementById("nav").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b === btn));
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("on"));
+      document.getElementById("page-" + btn.dataset.page).classList.add("on");
+    });
+
+    function collectSettings() {
+      settings.name = setName.value.trim() || DEFAULTS.name;
+      settings.tag = setTag.value.trim();
+      settings.wa = setWa.value.trim();
+      settings.addr = setAddr.value.trim();
+      settings.adminUser = setAdminUser.value.trim() || "admin";
+      settings.adminPass = setAdminPass.value || "admin123";
+      settings.motto = setMotto.value;
+      settings.autofill = setAutofill.checked;
+      settings.principal = setPrincipal.value;
+      settings.year = setYear.value;
+      settings.email = setEmail.value;
+      settings.phone = setPhone.value;
+      settings.web = setWeb.value;
+      saveSettingsObj(settings);
+      applyBranding();
+    }
+
+    saveSettings.addEventListener("click", () => {
+      collectSettings();
+      setOk.style.display = "block";
+      setTimeout(() => setOk.style.display = "none", 2000);
+    });
+    saveProfile.addEventListener("click", () => {
+      collectSettings();
+      proOk.style.display = "block";
+      setTimeout(() => proOk.style.display = "none", 2000);
+    });
+
+    logoFile.addEventListener("change", () => {
+      const f = logoFile.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        settings.logoData = reader.result;
+        saveSettingsObj(settings);
+        applyBranding();
+      };
+      reader.readAsDataURL(f);
+    });
+
+    forgot.addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Password reset ke liye WhatsApp karein: " + settings.wa);
+    });
+
+    applyBranding();
+  </script>
 </body>
 </html>
