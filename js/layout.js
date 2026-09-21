@@ -106,10 +106,15 @@ function renderLayout(activePage) {
 
   const sidebar = document.getElementById('sidebar');
   if (sidebar) {
+    const logoSrc = settings.logo || SCHOOL.logo || 'assets/logo/school-logo.png';
+    const schoolName = settings.schoolName || SCHOOL.name || 'THE KNOWLEDGE HUB PUBLIC SCHOOL';
     sidebar.innerHTML = `
       <div class="sidebar-header">
-        <img src="${settings.logo || SCHOOL.logo}" alt="Logo" onerror="this.src='assets/logo/logo.svg'">
-        <div class="school-name">${settings.schoolName || SCHOOL.name}</div>
+        <img class="sidebar-logo" src="${logoSrc}" alt="School Logo"
+          onerror="this.onerror=null;this.src='assets/logo/school-logo.png'">
+        <div class="school-name-wrap">
+          <div class="school-name">${schoolName}</div>
+        </div>
       </div>
       <div class="sidebar-nav">${navHtml}</div>
       <div class="sidebar-footer">
