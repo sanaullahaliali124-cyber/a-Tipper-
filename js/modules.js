@@ -525,8 +525,16 @@ function saveAttendance() {
 }
 
 function renderSettingsPage(container) {
+  if (typeof initSettings === 'function') {
+    initSettings();
+    return;
+  }
   const s = getSettings();
   container.innerHTML = `
+    <div class="card mb-3"><div class="card-header"><h2>School Logo</h2></div>
+    <div class="card-body"><p class="text-muted">Upload settings.js for full logo options (Add / Remove Logo).</p>
+    <img src="${s.logo || 'assets/logo/school-logo.png'}" style="width:80px;height:80px;object-fit:contain;background:#fff;border-radius:12px" onerror="this.src='assets/logo/school-logo.png'">
+    </div></div>
     <form id="settingsForm" onsubmit="saveSettingsForm(event)">
       <h3 style="margin-bottom:16px;color:var(--primary-dark)">School Settings</h3>
       <div class="form-row">
@@ -545,21 +553,10 @@ function renderSettingsPage(container) {
         <div style="grid-column:1/-1"><label class="form-label">Address</label>
           <textarea class="form-textarea" id="setAddress">${s.schoolAddress||''}</textarea></div>
       </div>
-      <hr style="margin:24px 0;border:none;border-top:1px solid var(--gray-light)">
-      <h3 style="margin-bottom:16px;color:var(--primary-dark)">Admin Account</h3>
-      <div class="form-row">
-        <div><label class="form-label">Change Password</label>
-          <input type="password" class="form-control" id="setNewPass" placeholder="New password"></div>
-        <div><label class="form-label">Confirm Password</label>
-          <input type="password" class="form-control" id="setConfirmPass" placeholder="Confirm"></div>
-      </div>
       <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save"></i> Save Settings</button>
-    </form>
-    <div class="mt-3">
-      <button class="btn btn-outline btn-sm" onclick="exportData()"><i class="fas fa-download"></i> Export All Data (JSON)</button>
-      <button class="btn btn-outline btn-sm" onclick="if(confirm('Reset all data to defaults?')){localStorage.clear();location.reload()}"><i class="fas fa-redo"></i> Reset System</button>
-    </div>`;
+    </form>`;
 }
+
 
 function saveSettingsForm(e) {
   e.preventDefault();
