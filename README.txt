@@ -1,21 +1,17 @@
-SETTINGS FIX - Add Logo / Remove Logo options
+ALL ROLES - Profile Settings
 
-Upload these to GitHub (REPLACE):
+Upload:
+- settings.html  -> root
+- js/settings.js -> js/settings.js
+- js/layout.js   -> js/layout.js
 
-1. settings.html          --> root
-2. js/settings.js         --> js/settings.js
-3. js/modules.js          --> js/modules.js  
-4. js/layout.js           --> js/layout.js
-5. assets/logo/school-logo.png  --> assets/logo/
+Teacher / Student / Parent / Staff can now:
+- Add / Change / Remove own profile photo
+- Edit name, phone, WhatsApp, email, address
+- Change own password
 
-After upload open Settings page. You will see:
+Admin also gets:
+- School Logo Add / Change / Remove
+- School Settings
 
-School Logo section:
-  [Add Logo]  [Change Logo]  [Remove Logo]
-
-Profile Photo section:
-  [Add / Change Photo]  [Remove Photo]
-
-Also school name, phone, WhatsApp, password fields.
-
-Login: no default password auto-filled anymore.
+Sidebar: Settings link for every role.
