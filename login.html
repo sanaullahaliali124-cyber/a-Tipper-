@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | THE SMART MODERN PUBLIC SCHOOL</title>
-  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <title>Login | THE KNOWLEDGE HUB PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/school-logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -13,8 +13,8 @@
   <div class="login-page">
     <div class="login-card">
       <div class="login-logo">
-        <img src="assets/logo/logo.svg" alt="School Logo">
-        <h1>THE SMART MODERN PUBLIC SCHOOL</h1>
+        <img src="assets/logo/school-logo.png" alt="School Logo" style="width:90px;height:90px;object-fit:contain;" onerror="this.src='assets/logo/logo.png'">
+        <h1>THE KNOWLEDGE HUB PUBLIC SCHOOL</h1>
         <p>School Management System</p>
       </div>
 
@@ -55,7 +55,6 @@
           </a>
         </p>
         <p style="margin-top:8px;font-size:0.8rem;color:#999">
-          Default Admin: <strong>admin</strong> / <strong>admin123</strong>
         </p>
       </div>
     </div>
@@ -79,17 +78,11 @@
         tab.classList.add('active');
         selectedRole = tab.dataset.role;
         // Pre-fill for convenience
-        const creds = DEFAULT_CREDS[selectedRole];
-        if (creds) {
-          document.getElementById('username').value = creds.user;
-          document.getElementById('password').value = creds.pass;
-        }
+        // credentials not auto-filled
       });
     });
 
-    // Pre-fill admin
-    document.getElementById('username').value = 'admin';
-    document.getElementById('password').value = 'admin123';
+    // no default credentials filled
 
     function togglePassword() {
       const input = document.getElementById('password');

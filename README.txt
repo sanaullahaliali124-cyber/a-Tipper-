@@ -1,20 +1,21 @@
-NEW FILES - Sidebar Logo + Settings Add/Remove Logo
+SETTINGS FIX - Add Logo / Remove Logo options
 
-UPLOAD ON GITHUB (replace same paths):
+Upload these to GitHub (REPLACE):
 
-1. js/settings.js     <-- NEW (Add Logo, Change Logo, Remove Logo)
-2. js/layout.js       <-- logo LEFT of school name in sidebar
-3. js/app.js          <-- school name + logo path
-4. css/style.css      <-- logo size in sidebar
-5. assets/logo/school-logo.png  <-- official logo file (MUST upload)
+1. settings.html          --> root
+2. js/settings.js         --> js/settings.js
+3. js/modules.js          --> js/modules.js  
+4. js/layout.js           --> js/layout.js
+5. assets/logo/school-logo.png  --> assets/logo/
 
-Settings page buttons:
-- Add Logo
-- Change Logo  
-- Remove Logo
-- Add/Change Profile Photo
-- Remove Photo
+After upload open Settings page. You will see:
 
-After upload: open Settings once, or clear browser data if old name stuck.
-School: THE KNOWLEDGE HUB PUBLIC SCHOOL
-WhatsApp: 03304886710
+School Logo section:
+  [Add Logo]  [Change Logo]  [Remove Logo]
+
+Profile Photo section:
+  [Add / Change Photo]  [Remove Photo]
+
+Also school name, phone, WhatsApp, password fields.
+
+Login: no default password auto-filled anymore.
