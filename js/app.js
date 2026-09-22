@@ -1,17 +1,17 @@
 /**
- * THE SMART MODERN PUBLIC SCHOOL - Core Application
+ * THE KNOWLEDGE HUB PUBLIC SCHOOL - Core Application
  * Data layer with LocalStorage persistence
  */
 
 const SCHOOL = {
-  name: 'THE SMART MODERN PUBLIC SCHOOL',
-  shortName: 'SMPS',
+  name: 'THE KNOWLEDGE HUB PUBLIC SCHOOL',
+  shortName: 'TKHPS',
   whatsapp: '03304886710',
   whatsappIntl: '923304886710',
   phone: '03304886710',
-  email: 'info@smartmodern.edu.pk',
+  email: 'info@knowledgehub.edu.pk',
   address: 'Main Campus, Pakistan',
-  logo: 'assets/logo/logo.svg'
+  logo: 'assets/logo/school-logo.png'
 };
 
 const STORAGE_KEYS = {
@@ -226,7 +226,7 @@ function initDefaultData() {
     password: 'admin123',
     name: 'System Administrator',
     role: 'admin',
-    email: 'admin@smartmodern.edu.pk',
+    email: 'admin@knowledgehub.edu.pk',
     phone: '03304886710',
     whatsapp: '03304886710',
     status: 'active',
