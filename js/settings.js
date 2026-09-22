@@ -270,14 +270,40 @@ function handleProfilePhoto(e) {
   var file = e.target.files && e.target.files[0];
   if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('Select image', 'error'); return; }
-  if (file.size > 2 * 1024 * 1024) { showToast('Max 2MB', 'error'); return; }
-  var reader = new FileReader();
-  reader.onload = function (ev) {
+  // Any size allowed — auto compress if large so LocalStorage works
+  compressImageFile(file, 800, 0.75, function (dataUrl) {
     var session = getSession();
     if (!session) return;
-    saveRoleProfile(session, { photo: ev.target.result, name: session.name });
+    saveRoleProfile(session, { photo: dataUrl, name: session.name });
     showToast('Photo updated');
     initSettings();
+  });
+}
+
+function compressImageFile(file, maxWidth, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function (ev) {
+    var img = new Image();
+    img.onload = function () {
+      var w = img.width;
+      var h = img.height;
+      if (w > maxWidth) {
+        h = Math.round(h * (maxWidth / w));
+        w = maxWidth;
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      try {
+        callback(canvas.toDataURL('image/jpeg', quality));
+      } catch (err) {
+        callback(ev.target.result);
+      }
+    };
+    img.onerror = function () { callback(ev.target.result); };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -296,16 +322,14 @@ function handleLogoUpload(e) {
   var file = e.target.files && e.target.files[0];
   if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('Select image', 'error'); return; }
-  var reader = new FileReader();
-  reader.onload = function (ev) {
+  compressImageFile(file, 600, 0.85, function (dataUrl) {
     var settings = getSettings();
-    settings.logo = ev.target.result;
+    settings.logo = dataUrl;
     saveSettings(settings);
     showToast('Logo updated');
     renderLayout('settings');
     initSettings();
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 function removeSchoolLogo() {
