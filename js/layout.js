@@ -48,6 +48,7 @@ const NAV_ITEMS = {
       { id: 'leave', label: 'Leave', icon: 'fa-calendar-times', href: 'leave.html' },
       { id: 'notices', label: 'Notices', icon: 'fa-bullhorn', href: 'notices.html' },
       { id: 'messages', label: 'Messages', icon: 'fa-envelope', href: 'messages.html' },
+      { id: 'settings', label: 'Settings', icon: 'fa-cog', href: 'settings.html' },
       { id: 'profile', label: 'Profile', icon: 'fa-user-circle', href: 'profile.html' }
     ]}
   ],
@@ -60,6 +61,7 @@ const NAV_ITEMS = {
       { id: 'exams', label: 'Results', icon: 'fa-file-alt', href: 'exams.html' },
       { id: 'fees', label: 'Fees', icon: 'fa-money-bill-wave', href: 'fees.html' },
       { id: 'notices', label: 'Notices', icon: 'fa-bullhorn', href: 'notices.html' },
+      { id: 'settings', label: 'Settings', icon: 'fa-cog', href: 'settings.html' },
       { id: 'profile', label: 'Profile', icon: 'fa-user-circle', href: 'profile.html' }
     ]}
   ],
@@ -73,6 +75,7 @@ const NAV_ITEMS = {
       { id: 'exams', label: 'Results', icon: 'fa-file-alt', href: 'exams.html' },
       { id: 'notices', label: 'Notices', icon: 'fa-bullhorn', href: 'notices.html' },
       { id: 'messages', label: 'Messages', icon: 'fa-envelope', href: 'messages.html' },
+      { id: 'settings', label: 'Settings', icon: 'fa-cog', href: 'settings.html' },
       { id: 'profile', label: 'Profile', icon: 'fa-user-circle', href: 'profile.html' }
     ]}
   ],
@@ -81,6 +84,7 @@ const NAV_ITEMS = {
       { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
       { id: 'leave', label: 'Leave', icon: 'fa-calendar-times', href: 'leave.html' },
       { id: 'notices', label: 'Notices', icon: 'fa-bullhorn', href: 'notices.html' },
+      { id: 'settings', label: 'Settings', icon: 'fa-cog', href: 'settings.html' },
       { id: 'profile', label: 'Profile', icon: 'fa-user-circle', href: 'profile.html' }
     ]}
   ]
