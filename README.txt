@@ -1,16 +1,20 @@
-THE KNOWLEDGE HUB PUBLIC SCHOOL - Update Files
+NEW FILES - Sidebar Logo + Settings Add/Remove Logo
 
-1. SIDEBAR LOGO (left of school name):
-   - Copy js/layout.js  ->  your js/layout.js
-   - Copy css/style.css ->  your css/style.css
-   - Copy assets/logo/school-logo.png -> assets/logo/
+UPLOAD ON GITHUB (replace same paths):
 
-2. SETTINGS - Profile photo Add / Change / Remove:
-   - Copy js/settings.js -> your js/settings.js
+1. js/settings.js     <-- NEW (Add Logo, Change Logo, Remove Logo)
+2. js/layout.js       <-- logo LEFT of school name in sidebar
+3. js/app.js          <-- school name + logo path
+4. css/style.css      <-- logo size in sidebar
+5. assets/logo/school-logo.png  <-- official logo file (MUST upload)
 
-3. EXAMS module:
-   - Copy html/exams.html -> exams.html
-   - Copy html/results.html -> results.html  
-   - Copy js/exams.js -> js/exams.js
+Settings page buttons:
+- Add Logo
+- Change Logo  
+- Remove Logo
+- Add/Change Profile Photo
+- Remove Photo
 
+After upload: open Settings once, or clear browser data if old name stuck.
+School: THE KNOWLEDGE HUB PUBLIC SCHOOL
 WhatsApp: 03304886710
