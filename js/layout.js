@@ -7,6 +7,7 @@ const NAV_ITEMS = {
     { section: 'Main', items: [
       { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: 'dashboard.html' },
       { id: 'students', label: 'Students', icon: 'fa-user-graduate', href: 'students.html' },
+      { id: 'idcards', label: 'Student ID Cards', icon: 'fa-id-card', href: 'id-cards.html' },
       { id: 'teachers', label: 'Teachers', icon: 'fa-chalkboard-teacher', href: 'teachers.html' },
       { id: 'parents', label: 'Parents', icon: 'fa-users', href: 'parents.html' },
       { id: 'staff', label: 'Staff', icon: 'fa-user-tie', href: 'staff.html' }
