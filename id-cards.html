@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student ID Cards | THE KNOWLEDGE HUB PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/school-logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/id-cards.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main-content">
+      <header class="top-header" id="topHeader"></header>
+      <main class="page-content">
+        <div class="page-header no-print">
+          <div>
+            <div class="breadcrumb"><a href="dashboard.html">Home</a> / Student ID Cards</div>
+            <h1><i class="fas fa-id-card"></i> Student ID Cards</h1>
+          </div>
+          <div class="d-flex gap-2" style="flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="openBulkModal()">
+              <i class="fas fa-layer-group"></i> Bulk Generate
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.location.href='students.html'">
+              <i class="fas fa-user-graduate"></i> Students
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid no-print" id="idStats"></div>
+
+        <div class="card no-print">
+          <div class="card-body">
+            <div class="filters-bar">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search name, admission no, ID..." oninput="renderIdList()">
+              </div>
+              <select class="form-select" id="filterClass" onchange="renderIdList()">
+                <option value="">All Classes</option>
+              </select>
+              <select class="form-select" id="filterSection" onchange="renderIdList()">
+                <option value="">All Sections</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+              </select>
+              <select class="form-select" id="filterStatus" onchange="renderIdList()">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Admission No</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Roll</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="idCardsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden print area -->
+        <div id="printArea" class="print-only"></div>
+      </main>
+      <footer class="app-footer no-print" id="appFooter"></footer>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div class="modal-overlay no-print" id="previewModal">
+    <div class="modal modal-lg" style="max-width:720px">
+      <div class="modal-header">
+        <h3>ID Card Preview</h3>
+        <button class="modal-close" onclick="closePreview()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="id-tabs no-print">
+          <button class="btn btn-sm btn-primary" id="tabFront" onclick="showCardSide('front')">Front Side</button>
+          <button class="btn btn-sm btn-outline" id="tabBack" onclick="showCardSide('back')">Back Side</button>
+        </div>
+        <div id="cardPreviewWrap" class="card-preview-wrap">
+          <div id="idCardFront" class="id-card-face"></div>
+          <div id="idCardBack" class="id-card-face hidden"></div>
+        </div>
+      </div>
+      <div class="modal-footer no-print">
+        <button class="btn btn-outline" onclick="closePreview()">Close</button>
+        <button class="btn btn-outline" onclick="regenerateQR()"><i class="fas fa-qrcode"></i> Regenerate QR</button>
+        <button class="btn btn-primary" onclick="printSingleCard()"><i class="fas fa-print"></i> Print</button>
+        <button class="btn btn-accent" onclick="downloadCardImage()"><i class="fas fa-download"></i> Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Modal -->
+  <div class="modal-overlay no-print" id="bulkModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Bulk Generate ID Cards</h3>
+        <button class="modal-close" onclick="document.getElementById('bulkModal').classList.remove('show')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Class</label>
+          <select class="form-select" id="bulkClass">
+            <option value="">All Classes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Section</label>
+          <select class="form-select" id="bulkSection">
+            <option value="">All Sections</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+          </select>
+        </div>
+        <p class="text-muted" style="font-size:0.85rem">Only active students will be included.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="document.getElementById('bulkModal').classList.remove('show')">Cancel</button>
+        <button class="btn btn-primary" onclick="printBulkCards()"><i class="fas fa-print"></i> Print Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/id-cards.js"></script>
+</body>
+</html>

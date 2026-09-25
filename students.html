@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Students | THE SMART MODERN PUBLIC SCHOOL</title>
-  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <title>Students | THE KNOWLEDGE HUB PUBLIC SCHOOL</title>
+  <link rel="icon" href="assets/logo/school-logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -190,6 +190,22 @@
               <input type="tel" class="form-control" id="sEmergency">
             </div>
           </div>
+          <div class="form-row">
+            <div style="grid-column:1/-1">
+              <label class="form-label">Student Photo (for ID Card)</label>
+              <div class="d-flex align-center gap-3" style="flex-wrap:wrap">
+                <img id="sPhotoPreview" src="" alt="" style="width:72px;height:88px;object-fit:cover;border-radius:8px;background:#e9ecef;display:none;border:2px solid #d0d7e2">
+                <div>
+                  <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">
+                    <i class="fas fa-camera"></i> Upload Photo
+                    <input type="file" id="sPhotoInput" accept="image/*" capture="user" style="display:none" onchange="onStudentPhotoChange(event)">
+                  </label>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="clearStudentPhoto()"><i class="fas fa-trash"></i> Remove</button>
+                  <input type="hidden" id="sPhotoData" value="">
+                </div>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -316,6 +332,11 @@
       document.getElementById('studentId').value = '';
       document.getElementById('sAdmissionDate').value = today();
       document.getElementById('sStatus').value = 'active';
+      if (document.getElementById('sPhotoData')) {
+        document.getElementById('sPhotoData').value = '';
+        const prev = document.getElementById('sPhotoPreview');
+        if (prev) { prev.src = ''; prev.style.display = 'none'; }
+      }
 
       if (id) {
         const s = getData(STORAGE_KEYS.students).find(x => x.id === id);
@@ -338,6 +359,10 @@
           document.getElementById('sAddress').value = s.address || '';
           document.getElementById('sPrevSchool').value = s.previousSchool || '';
           document.getElementById('sEmergency').value = s.emergencyContact || '';
+          document.getElementById('sPhotoData').value = s.photo || '';
+          const prev = document.getElementById('sPhotoPreview');
+          if (s.photo) { prev.src = s.photo; prev.style.display = 'block'; }
+          else { prev.src = ''; prev.style.display = 'none'; }
         }
       } else {
         // Auto admission no
@@ -378,8 +403,13 @@
         address: document.getElementById('sAddress').value.trim(),
         previousSchool: document.getElementById('sPrevSchool').value.trim(),
         emergencyContact: document.getElementById('sEmergency').value.trim(),
-        photo: ''
+        photo: document.getElementById('sPhotoData').value || ''
       };
+      if (!data.photo && editingId) {
+        const existing = students.find(x => x.id === editingId);
+        if (existing && existing.photo) data.photo = existing.photo;
+      }
+
 
       if (editingId) {
         const idx = students.findIndex(s => s.id === editingId);
@@ -448,6 +478,38 @@
     function printStudentProfile() {
       window.print();
     }
-  </script>
+  
+    function onStudentPhotoChange(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+          let w = img.width, h = img.height;
+          const maxW = 400;
+          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          const data = c.toDataURL('image/jpeg', 0.8);
+          document.getElementById('sPhotoData').value = data;
+          const prev = document.getElementById('sPhotoPreview');
+          prev.src = data;
+          prev.style.display = 'block';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    function clearStudentPhoto() {
+      document.getElementById('sPhotoData').value = '';
+      const prev = document.getElementById('sPhotoPreview');
+      prev.src = '';
+      prev.style.display = 'none';
+      const inp = document.getElementById('sPhotoInput');
+      if (inp) inp.value = '';
+    }
+</script>
 </body>
 </html>
